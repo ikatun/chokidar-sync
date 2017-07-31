@@ -20,7 +20,7 @@ function remove(srcDir, srcRelativePath, destDir) {
 const sync = (srcDir, destDir, opts) => fs.remove(destDir).then(() => {
   const watcher = chokidar.watch(srcDir, {
     ignoreInitial: false,
-    ignored: path.join(srcDir, 'node_modules')
+    ignored: opts.ignored || path.join(srcDir, '**', 'node_modules')
   });
 
   const log = opts.log || (() => {});

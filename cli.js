@@ -7,7 +7,7 @@ const srcDir = process.argv[2];
 const destDir = process.argv[3];
 
 function log(args) {
-  const destPath = path.join(destDir, args.relative);
+  const destPath = args.relative;
   if (args.type === 'add') {
     console.log(destPath.green);
   } else if (args.type === 'change') {
