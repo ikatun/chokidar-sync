@@ -2,6 +2,16 @@ const path = require('path');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
 
+function delay(duration) {
+  return function() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve();
+      }, duration)
+    });
+  };
+};
+
 function copy(srcDir, srcRelativePath, destDir) {
   const fullSrcPath = path.join(srcDir, srcRelativePath);
   const fullDestPath = path.join(destDir, srcRelativePath);
@@ -38,7 +48,10 @@ const sync = (srcDir, destDir, opts) => fs.remove(destDir).then(() => {
 
 	watcher.on('unlink', path => { 
     remove(srcDir, relative(path), destDir)
-      .then(() => log({ relative: relative(path), type: 'unlink' }));
+      .then(() => log({ relative: relative(path), type: 'unlink' }))
+      .then(() => delay(1000))
+      .then(() => copy(srcDir, relative(path), destDir))
+      .catch(() => {});
   });
 });
 
