@@ -2,15 +2,7 @@ const path = require('path');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
 
-function delay(duration) {
-  return function() {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve();
-      }, duration)
-    });
-  };
-};
+const delay = duration => new Promise(resolve => setTimeout(() => resolve(), duration));
 
 function copy(srcDir, srcRelativePath, destDir) {
   const fullSrcPath = path.join(srcDir, srcRelativePath);
@@ -34,21 +26,26 @@ const sync = (srcDir, destDir, opts) => fs.remove(destDir).then(() => {
   });
 
   const log = opts.log || (() => {});
+  const onError = opts.error || (() => {});
+
   const relative = srcFullPath => path.relative(srcDir, srcFullPath);
 
   watcher.on('add', path => { 
     copy(srcDir, relative(path), destDir)
-      .then(() => log({ relative: relative(path), type: 'add' }));
+      .then(() => log({ relative: relative(path), type: 'add' }))
+      .catch(onError);
   });
 
 	watcher.on('change', path => { 
     copy(srcDir, relative(path), destDir)
-      .then(() => log({ relative: relative(path), type: 'change' }));
+      .then(() => log({ relative: relative(path), type: 'change' }))
+      .catch(onError)
   });
 
 	watcher.on('unlink', path => { 
     remove(srcDir, relative(path), destDir)
       .then(() => log({ relative: relative(path), type: 'unlink' }))
+      .catch(onError)
       .then(() => delay(1000))
       .then(() => copy(srcDir, relative(path), destDir))
       .catch(() => {});
